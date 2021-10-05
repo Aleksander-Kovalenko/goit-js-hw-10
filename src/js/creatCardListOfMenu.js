@@ -11,6 +11,8 @@ const refs = {
   theme: document.querySelector('.theme-switch'),
 };
 
+refs.gallery.innerHTML = creatListItem(date);
+
 // const currentTheme =
 //   localStorage.getItem('theme') === 'dark-theme'
 //     ? Theme.DARK
