@@ -12,11 +12,13 @@ const refs = {
   button: document.querySelector('.theme-switch__toggle'),
 };
 
-const CURRENT_THEME = localStorage.getItem('theme');
+let CURRENT_THEME = JSON.parse(localStorage.getItem('settings'));
 
-if (localStorage.getItem('theme')) {
-  document.body.classList.add(localStorage.getItem('theme'));
-  refs.button.checked = localStorage.getItem('theme') === 'light-theme' ? false : true;
+if (CURRENT_THEME) {
+  (function oldTheme() {
+    document.body.classList.add(CURRENT_THEME.newTheme);
+    refs.button.checked = CURRENT_THEME.checked;
+  })();
 }
 
 refs.gallery.innerHTML = creatListItem(date);
@@ -24,19 +26,28 @@ refs.gallery.innerHTML = creatListItem(date);
 refs.theme.addEventListener('click', e => {
   e.preventDefault();
 
-  if (localStorage.getItem('theme') === 'light-theme' || localStorage.getItem('theme') === null) {
-    document.body.classList.replace(Theme.LIGHT, Theme.DARK);
-    refs.button.checked = true;
-    localStorage.setItem('theme', Theme.DARK);
-    localStorage.setItem('checked', true);
-  } else if (localStorage.getItem('theme') === 'dark-theme') {
-    document.body.classList.replace(Theme.DARK, Theme.LIGHT);
-    refs.button.checked = false;
-    localStorage.setItem('theme', Theme.LIGHT);
-    localStorage.setItem('checked', false);
+  CURRENT_THEME = JSON.parse(localStorage.getItem('settings'));
+
+  if (localStorage.getItem('settings') === null) {
+    CurrentChangeTheme(undefined, 'dark-theme', true);
+  } else if (CURRENT_THEME.newTheme == 'light-theme') {
+    CurrentChangeTheme('light-theme', 'dark-theme', true);
+  } else if (CURRENT_THEME.newTheme == 'dark-theme') {
+    CurrentChangeTheme('dark-theme', 'light-theme', false);
   }
 });
 
-// function changeTheme(key, checked) {
-//    localStorage.setItem(key, Theme.DARK);
-// }
+function CurrentChangeTheme(currentTheme, newTheme, checked) {
+  if (currentTheme) document.body.classList.remove(currentTheme);
+
+  document.body.classList.add(newTheme);
+  refs.button.checked = checked;
+
+  const parameters = {
+    currentTheme,
+    newTheme,
+    checked,
+  };
+
+  return localStorage.setItem('settings', JSON.stringify(parameters));
+}
