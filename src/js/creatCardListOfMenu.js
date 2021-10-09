@@ -1,53 +1,49 @@
-import date from '../menu.json';
-import creatListItem from '../template/cards.hbs';
+import template from '../template/cards.hbs';
+import cards from '../menu.json';
+
+const templateFoodCards = template(cards);
 
 const Theme = {
   LIGHT: 'light-theme',
   DARK: 'dark-theme',
 };
 
-const refs = {
-  gallery: document.querySelector('.js-menu'),
-  theme: document.querySelector('.theme-switch'),
-  button: document.querySelector('.theme-switch__toggle'),
-};
+class TypeOfThemeOnBody {
+  constructor({ containerCards, switchTheme }) {
+    this.refs = {
+      container: document.querySelector(containerCards),
+      switch: document.querySelector(switchTheme),
+    };
 
-let CURRENT_THEME = JSON.parse(localStorage.getItem('settings'));
+    this.refs.container.insertAdjacentHTML('beforeend', templateFoodCards);
 
-if (CURRENT_THEME) {
-  (function oldTheme() {
-    document.body.classList.add(CURRENT_THEME.newTheme);
-    refs.button.checked = CURRENT_THEME.checked;
-  })();
-}
+    this.refs.switch.addEventListener('change', this.onHandlerThemSwitch.bind(this));
 
-refs.gallery.innerHTML = creatListItem(date);
-
-refs.theme.addEventListener('click', e => {
-  e.preventDefault();
-
-  CURRENT_THEME = JSON.parse(localStorage.getItem('settings'));
-
-  if (localStorage.getItem('settings') === null) {
-    CurrentChangeTheme(undefined, 'dark-theme', true);
-  } else if (CURRENT_THEME.newTheme == 'light-theme') {
-    CurrentChangeTheme('light-theme', 'dark-theme', true);
-  } else if (CURRENT_THEME.newTheme == 'dark-theme') {
-    CurrentChangeTheme('dark-theme', 'light-theme', false);
+    this.readLocalStorage();
   }
-});
 
-function CurrentChangeTheme(currentTheme, newTheme, checked) {
-  if (currentTheme) document.body.classList.remove(currentTheme);
+  onHandlerThemSwitch(e) {
+    e.preventDefault();
 
-  document.body.classList.add(newTheme);
-  refs.button.checked = checked;
+    if (document.body.classList.contains(Theme.LIGHT)) {
+      this.choiceTheme(Theme.LIGHT, Theme.DARK);
+    } else if (document.body.classList.contains(Theme.DARK)) {
+      this.choiceTheme(Theme.DARK, Theme.LIGHT);
+    }
+  }
 
-  const parameters = {
-    currentTheme,
-    newTheme,
-    checked,
-  };
+  choiceTheme(currentTheme, newTheme) {
+    document.body.classList.replace(currentTheme, newTheme);
+    localStorage.setItem('theme', newTheme);
+  }
 
-  return localStorage.setItem('settings', JSON.stringify(parameters));
+  readLocalStorage() {
+    const current = localStorage.getItem('theme');
+    if (current === Theme.DARK) {
+      document.body.classList.add(Theme.DARK);
+      this.refs.switch.checked = true;
+    } else document.body.classList.add(Theme.LIGHT);
+  }
 }
+
+export default TypeOfThemeOnBody;
